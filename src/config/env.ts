@@ -1,6 +1,6 @@
 // src/env.ts
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const getEnvVar = (...keys: string[]): string | undefined => {
   for (const key of keys) {

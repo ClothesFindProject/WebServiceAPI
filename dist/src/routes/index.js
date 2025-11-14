@@ -1,0 +1,21 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.routes = void 0;
+const express_1 = require("express");
+const usuarioRoutes_1 = require("./usuarioRoutes");
+const empresaRoutes_1 = require("./empresaRoutes");
+const marcaRoutes_1 = require("./marcaRoutes");
+const produtoRoutes_1 = require("./produtoRoutes");
+const imagemRoutes_1 = require("./imagemRoutes");
+const curtidaLojaRoutes_1 = require("./curtidaLojaRoutes");
+const curtidaProdutoRoutes_1 = require("./curtidaProdutoRoutes");
+const router = (0, express_1.Router)();
+router.use('/usuarios', usuarioRoutes_1.usuarioRoutes);
+router.use('/empresas', empresaRoutes_1.empresaRoutes);
+router.use('/marcas', marcaRoutes_1.marcaRoutes);
+router.use('/produtos', produtoRoutes_1.produtoRoutes);
+router.use('/imagens', imagemRoutes_1.imagemRoutes);
+router.use('/curtidas', curtidaLojaRoutes_1.curtidaLojaRoutes);
+router.use('/curtidas-produtos', curtidaProdutoRoutes_1.curtidaProdutoRoutes);
+exports.routes = router;
+//# sourceMappingURL=index.js.map

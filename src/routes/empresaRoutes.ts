@@ -72,6 +72,15 @@ const router = Router();
  *         Site:
  *           type: string
  *           nullable: true
+ *         LinkInstagram:
+ *           type: string
+ *           nullable: true
+ *         LinkWhatsapp:
+ *           type: string
+ *           nullable: true
+ *         LinkSite:
+ *           type: string
+ *           nullable: true
  *         ResponsavelContato:
  *           type: string
  *           nullable: true

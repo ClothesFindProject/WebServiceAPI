@@ -21,6 +21,9 @@ export interface Empresa {
   TelefoneSecundario?: string | null;
   Email?: string | null;
   Site?: string | null;
+  LinkInstagram?: string | null;
+  LinkWhatsapp?: string | null;
+  LinkSite?: string | null;
   ResponsavelContato?: string | null;
   InscricaoSuframa?: string | null;
   RegimeTributario?: string | null;
@@ -62,6 +65,9 @@ const rowToEmpresa = (row: RowDataPacket): Empresa => {
     TelefoneSecundario: row.TelefoneSecundario,
     Email: row.Email,
     Site: row.Site,
+    LinkInstagram: row.LinkInstagram,
+    LinkWhatsapp: row.LinkWhatsapp,
+    LinkSite: row.LinkSite,
     ResponsavelContato: row.ResponsavelContato,
     InscricaoSuframa: row.InscricaoSuframa,
     RegimeTributario: row.RegimeTributario,
@@ -100,6 +106,9 @@ const baseColumns = [
   'TelefoneSecundario',
   'Email',
   'Site',
+  'LinkInstagram',
+  'LinkWhatsapp',
+  'LinkSite',
   'ResponsavelContato',
   'InscricaoSuframa',
   'RegimeTributario',
