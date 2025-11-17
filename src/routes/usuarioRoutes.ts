@@ -52,19 +52,19 @@ const router = Router();
  *           type: string
  *           format: date-time
  *           nullable: true
- *           description: "Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
+ *           description: "Opcional no cadastro. Se enviado null será ignorado. Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
  *           example: '2025-11-14 13:15:48'
  *         DataCriacao:
  *           type: string
  *           format: date-time
  *           nullable: true
- *           description: "Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
+ *           description: "Opcional no cadastro. Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
  *           example: '2025-11-14 13:15:48'
  *         DataInativacao:
  *           type: string
  *           format: date-time
  *           nullable: true
- *           description: "Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
+ *           description: "Opcional no cadastro. Se enviado null será ignorado. Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
  *           example: '2025-11-14 13:15:48'
  *         IdMenu:
  *           type: integer
@@ -72,6 +72,7 @@ const router = Router();
  *         EmpresaId:
  *           type: integer
  *           nullable: true
+ *           description: "Opcional no cadastro. Se enviado null será ignorado"
  *         created_at:
  *           type: string
  *           format: date-time
@@ -79,17 +80,56 @@ const router = Router();
  *           description: "Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
  *           example: '2025-11-14 13:15:48'
  *     UsuarioRegister:
- *       allOf:
- *         - $ref: '#/components/schemas/Usuario'
+ *       type: object
  *       required:
  *         - Nome
  *         - SobreNome
  *         - CpfCnpj
  *         - Senha
  *       properties:
+ *         Nome:
+ *           type: string
+ *         SobreNome:
+ *           type: string
+ *         CpfCnpj:
+ *           type: string
  *         Senha:
  *           type: string
  *           format: password
+ *         Telefone:
+ *           type: string
+ *           nullable: true
+ *         Telefone2:
+ *           type: string
+ *           nullable: true
+ *         Pais:
+ *           type: string
+ *           nullable: true
+ *         UF:
+ *           type: string
+ *           nullable: true
+ *         Cidade:
+ *           type: string
+ *           nullable: true
+ *         Bairro:
+ *           type: string
+ *           nullable: true
+ *         Rua:
+ *           type: string
+ *           nullable: true
+ *         Empresa:
+ *           type: string
+ *           nullable: true
+ *         Ativo:
+ *           type: boolean
+ *           description: "Opcional no cadastro. Default: true"
+ *         IdMenu:
+ *           type: integer
+ *           nullable: true
+ *         EmpresaId:
+ *           type: integer
+ *           nullable: true
+ *           description: "Opcional no cadastro. Se enviado null será ignorado"
  *     UsuarioLogin:
  *       type: object
  *       required:

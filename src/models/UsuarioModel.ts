@@ -88,6 +88,8 @@ const baseColumns = [
   'created_at',
 ] as const;
 
+const columnsIgnoreNull = new Set<(typeof baseColumns)[number]>(['ProximaExpiracao', 'DataInativacao', 'EmpresaId']);
+
 const sanitizeValue = (value: unknown): unknown => {
   if (value === undefined) {
     return null;
@@ -105,9 +107,16 @@ const create = async (usuario: UsuarioInsert): Promise<Usuario> => {
     DataCriacao: usuario.DataCriacao ?? now,
     created_at: usuario.created_at ?? now,
   };
-  const placeholders = baseColumns.map(() => '?').join(', ');
-  const query = `INSERT INTO Usuarios (${baseColumns.join(', ')}) VALUES (${placeholders})`;
-  const values = baseColumns.map((column) => sanitizeValue((payload as Record<string, unknown>)[column]));
+  const columns = baseColumns.filter((column) => {
+    if (!columnsIgnoreNull.has(column)) {
+      return true;
+    }
+    const value = (payload as Record<string, unknown>)[column];
+    return value !== null && value !== undefined;
+  });
+  const placeholders = columns.map(() => '?').join(', ');
+  const query = `INSERT INTO Usuarios (${columns.join(', ')}) VALUES (${placeholders})`;
+  const values = columns.map((column) => sanitizeValue((payload as Record<string, unknown>)[column]));
   const [result] = await pool.execute<ResultSetHeader>(query, values);
   return {
     ...payload,
@@ -145,7 +154,15 @@ const findAll = async (): Promise<Usuario[]> => {
 };
 
 const update = async (id: number, data: UsuarioUpdate): Promise<Usuario | null> => {
-  const entries = Object.entries(data).filter(([, value]) => value !== undefined);
+  const entries = Object.entries(data).filter(([key, value]) => {
+    if (value === undefined) {
+      return false;
+    }
+    if (value === null && columnsIgnoreNull.has(key as (typeof baseColumns)[number])) {
+      return false;
+    }
+    return true;
+  });
   if (entries.length === 0) {
     return findById(id);
   }
