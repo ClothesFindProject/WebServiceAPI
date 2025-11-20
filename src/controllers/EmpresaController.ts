@@ -7,7 +7,8 @@ const sendSuccess = <T>(res: Response, status: number, message: string, data?: T
 export const EmpresaController = {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const empresa = await EmpresaService.create(req.body);
+      const file = (req as any).file;
+      const empresa = await EmpresaService.create(req.body, file);
       sendSuccess(res, 201, 'Empresa criada com sucesso.', empresa);
     } catch (error) {
       next(error);

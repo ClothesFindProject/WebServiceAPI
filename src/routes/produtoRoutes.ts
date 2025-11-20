@@ -1,16 +1,38 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { ProdutoController } from '../controllers/ProdutoController';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 /**
  * @swagger
  * tags:
  *   name: Produtos
- *   description: Gestão de produtos
+ *   description: Gestao de produtos
  *
  * components:
  *   schemas:
+ *     Imagem:
+ *       type: object
+ *       properties:
+ *         Id:
+ *           type: integer
+ *         UrlImg:
+ *           type: string
+ *         Descricao:
+ *           type: string
+ *           nullable: true
+ *         IdProduto:
+ *           type: integer
+ *         CriadoEm:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
  *     Produto:
  *       type: object
  *       properties:
@@ -94,6 +116,10 @@ const router = Router();
  *           type: string
  *           nullable: true
  *           description: "Nome da empresa associada ao produto"
+ *         Imagens:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Imagem'
  *     ProdutoResponse:
  *       allOf:
  *         - $ref: '#/components/schemas/MessageResponse'
@@ -119,9 +145,52 @@ const router = Router();
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Produto'
+ *             type: object
+ *             properties:
+ *               CodigoInterno:
+ *                 type: string
+ *               NomeProduto:
+ *                 type: string
+ *               Descricao:
+ *                 type: string
+ *                 nullable: true
+ *               Genero:
+ *                 type: string
+ *               Estilo:
+ *                 type: string
+ *               Modelo:
+ *                 type: string
+ *               Composicao:
+ *                 type: string
+ *               Peso:
+ *                 type: number
+ *                 format: float
+ *               Altura:
+ *                 type: number
+ *                 format: float
+ *               Largura:
+ *                 type: number
+ *                 format: float
+ *               Tags:
+ *                 type: string
+ *                 description: "JSON array de tags. Ex: ['basica','verao']"
+ *               IdEmpresa:
+ *                 type: integer
+ *               IdMarca:
+ *                 type: integer
+ *                 nullable: true
+ *               Imagens:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: "Envie um ou mais arquivos com o campo Imagens"
+ *               ImagensMetadata:
+ *                 type: string
+ *                 nullable: true
+ *                 description: "Opcional: JSON array com descricoes [{\"Descricao\":\"frente\"},{\"Descricao\":\"costas\"}]"
  *     responses:
  *       201:
  *         description: Produto criado
@@ -130,7 +199,7 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/ProdutoResponse'
  */
-router.post('/', ProdutoController.create);
+router.post('/', upload.array('Imagens'), ProdutoController.create);
 
 /**
  * @swagger
@@ -168,7 +237,7 @@ router.get('/', ProdutoController.list);
  *             schema:
  *               $ref: '#/components/schemas/ProdutoResponse'
  *       404:
- *         description: Produto não encontrado
+ *         description: Produto nao encontrado
  */
 router.get('/:id', ProdutoController.findById);
 

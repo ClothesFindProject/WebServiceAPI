@@ -11,18 +11,21 @@ export type LoginDTO = {
 export type UsuarioWithMenu = {
     usuario: Omit<Usuario, 'Senha'>;
     menu: MenuTree | null;
+    UserImagem: string | null;
 };
 export declare const UsuarioService: {
-    register(data: RegisterUsuarioDTO): Promise<Omit<Usuario, "Senha">>;
+    register(data: RegisterUsuarioDTO, file?: any): Promise<Omit<Usuario, "Senha">>;
     login({ CpfCnpj, Senha }: LoginDTO): Promise<{
         usuario: Omit<Usuario, "Senha">;
         menu: MenuTree | null;
+        UserImagem: string | null;
         token: string;
     }>;
     findAll(): Promise<UsuarioWithMenu[]>;
     findById(id: number): Promise<UsuarioWithMenu>;
-    update(id: number, data: UsuarioUpdate): Promise<Omit<Usuario, "Senha">>;
+    update(id: number, data: UsuarioUpdate, file?: any): Promise<Omit<Usuario, "Senha">>;
     remove(id: number): Promise<void>;
+    changeStatus(id: number, ativo: unknown): Promise<Omit<Usuario, "Senha">>;
 };
 export {};
 //# sourceMappingURL=UsuarioService.d.ts.map

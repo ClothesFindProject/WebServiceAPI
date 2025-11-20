@@ -4,6 +4,13 @@ import { MenuModel, MenuTree } from '../models/MenuModel';
 import { hashPassword, comparePassword } from '../utils/password';
 import { ApiError } from '../utils/ApiError';
 import { env } from '../config/env';
+import { uploadUsuarioImagem } from '../config/cloudflare';
+
+const isValidCpfOrCnpj = (value: string): boolean => {
+  const cpfPattern = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
+  const cnpjPattern = /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/;
+  return cpfPattern.test(value) || cnpjPattern.test(value);
+};
 
 type RegisterRequired = Pick<UsuarioInsert, 'Nome' | 'SobreNome' | 'CpfCnpj'>;
 
@@ -20,6 +27,7 @@ export type LoginDTO = {
 export type UsuarioWithMenu = {
   usuario: Omit<Usuario, 'Senha'>;
   menu: MenuTree | null;
+  UserImagem: string | null;
 };
 
 const sanitizeUsuario = (usuario: Usuario): Omit<Usuario, 'Senha'> => {
@@ -33,20 +41,31 @@ const buildUsuarioWithMenu = async (usuario: Usuario): Promise<UsuarioWithMenu> 
   return {
     usuario: sanitizeUsuario(usuario),
     menu,
+    UserImagem: usuario.UserImagem ?? null,
   };
 };
 
 export const UsuarioService = {
-  async register(data: RegisterUsuarioDTO) {
+  async register(data: RegisterUsuarioDTO, file?: any) {
+    if (!isValidCpfOrCnpj(data.CpfCnpj)) {
+      throw ApiError.badRequest('CPF ou CNPJ no formato errado');
+    }
     const existing = await UsuarioModel.findByCpfCnpj(data.CpfCnpj);
     if (existing) {
-      throw ApiError.badRequest('Usuário já existe para este CPF/CNPJ');
+      throw ApiError.badRequest('Usuario ja existe para este CPF/CNPJ');
     }
+
+    let userImagemUrl: string | undefined;
+    if (file) {
+      userImagemUrl = await uploadUsuarioImagem(file);
+    }
+
     const senhaHash = await hashPassword(data.Senha);
     const usuarioCriado = await UsuarioModel.create({
       ...data,
       Senha: senhaHash,
       Ativo: data.Ativo ?? true,
+      UserImagem: userImagemUrl ?? (data as any).UserImagem ?? null,
     });
     return sanitizeUsuario(usuarioCriado);
   },
@@ -54,12 +73,15 @@ export const UsuarioService = {
   async login({ CpfCnpj, Senha }: LoginDTO) {
     const usuario = await UsuarioModel.findByCpfCnpj(CpfCnpj);
     if (!usuario?.Senha) {
-      throw ApiError.unauthorized('Credenciais inválidas');
+      throw ApiError.unauthorized('Credenciais invalidas');
+    }
+    if (!usuario.Ativo) {
+      throw ApiError.unauthorized('Usuario inativo, entre em contato com o administrador');
     }
 
     const senhaValida = await comparePassword(Senha, usuario.Senha);
     if (!senhaValida) {
-      throw ApiError.unauthorized('Credenciais inválidas');
+      throw ApiError.unauthorized('Credenciais invalidas');
     }
 
     const token = jwt.sign(
@@ -88,19 +110,22 @@ export const UsuarioService = {
   async findById(id: number) {
     const usuario = await UsuarioModel.findById(id);
     if (!usuario) {
-      throw ApiError.notFound('Usuário não encontrado');
+      throw ApiError.notFound('Usuario nao encontrado');
     }
     return buildUsuarioWithMenu(usuario);
   },
 
-  async update(id: number, data: UsuarioUpdate) {
+  async update(id: number, data: UsuarioUpdate, file?: any) {
     const payload = { ...data };
+    if (file) {
+      payload.UserImagem = await uploadUsuarioImagem(file);
+    }
     if (data.Senha) {
       payload.Senha = await hashPassword(data.Senha);
     }
     const updated = await UsuarioModel.update(id, payload);
     if (!updated) {
-      throw ApiError.notFound('Usuário não encontrado');
+      throw ApiError.notFound('Usuario nao encontrado');
     }
     return sanitizeUsuario(updated);
   },
@@ -108,7 +133,17 @@ export const UsuarioService = {
   async remove(id: number) {
     const deleted = await UsuarioModel.remove(id);
     if (!deleted) {
-      throw ApiError.notFound('Usuário não encontrado');
+      throw ApiError.notFound('Usuario nao encontrado');
     }
+  },
+
+  async changeStatus(id: number, ativo: unknown) {
+    const parsedAtivo =
+      typeof ativo === 'string' ? ['true', '1', 'yes', 'on'].includes(ativo.toLowerCase()) : Boolean(ativo);
+    const updated = await UsuarioModel.update(id, { Ativo: parsedAtivo });
+    if (!updated) {
+      throw ApiError.notFound('Usuario nao encontrado');
+    }
+    return sanitizeUsuario(updated);
   },
 };

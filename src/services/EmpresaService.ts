@@ -4,6 +4,7 @@ import { ProdutoModel, Produto } from '../models/ProdutoModel';
 import { MarcaModel } from '../models/MarcaModel';
 import type { ProdutoDetalhado } from './ProdutoService';
 import { ApiError } from '../utils/ApiError';
+import { uploadLogoEmpresa } from '../config/cloudflare';
 
 export type EmpresaDetalhada = Empresa & {
   Produtos: ProdutoDetalhado[];
@@ -30,8 +31,20 @@ const attachProdutos = async (empresa: Empresa): Promise<EmpresaDetalhada> => {
 };
 
 export const EmpresaService = {
-  async create(data: EmpresaInsert): Promise<Empresa> {
-    return EmpresaModel.create(data);
+  async create(data: EmpresaInsert, file?: any): Promise<Empresa> {
+    const safeData = (data ?? {}) as EmpresaInsert;
+    let imagemLogoUrl: string | undefined;
+
+    if (file) {
+      imagemLogoUrl = await uploadLogoEmpresa(file);
+    }
+
+    const payload: EmpresaInsert = {
+      ...safeData,
+      ImagemLogo: imagemLogoUrl ?? (safeData as any).ImagemLogo ?? null,
+    };
+
+    return EmpresaModel.create(payload);
   },
 
   async list(): Promise<EmpresaDetalhada[]> {
@@ -42,18 +55,16 @@ export const EmpresaService = {
   async findById(id: number): Promise<EmpresaDetalhada> {
     const empresa = await EmpresaModel.findById(id);
     if (!empresa) {
-      throw ApiError.notFound('Empresa não encontrada');
+      throw ApiError.notFound('Empresa nǜo encontrada');
     }
     return attachProdutos(empresa);
   },
 
   async update(id: number, data: EmpresaUpdate): Promise<Empresa> {
-    const empresa = await EmpresaModel.update(id, {
-      ...data,
-      DataAtualizacao: data.DataAtualizacao ?? new Date(),
-    });
+    const safeData = (data ?? {}) as EmpresaUpdate;
+    const empresa = await EmpresaModel.update(id, safeData);
     if (!empresa) {
-      throw ApiError.notFound('Empresa não encontrada');
+      throw ApiError.notFound('Empresa nǜo encontrada');
     }
     return empresa;
   },
@@ -61,18 +72,18 @@ export const EmpresaService = {
   async remove(id: number): Promise<void> {
     const deleted = await EmpresaModel.remove(id);
     if (!deleted) {
-      throw ApiError.notFound('Empresa não encontrada');
+      throw ApiError.notFound('Empresa nǜo encontrada');
     }
   },
 
   async associateUsuario(empresaId: number, usuarioId: number) {
     const empresa = await EmpresaModel.findById(empresaId);
     if (!empresa) {
-      throw ApiError.notFound('Empresa não encontrada');
+      throw ApiError.notFound('Empresa nǜo encontrada');
     }
     const usuario = await UsuarioModel.findById(usuarioId);
     if (!usuario) {
-      throw ApiError.notFound('Usuário não encontrado');
+      throw ApiError.notFound('Usuǭrio nǜo encontrado');
     }
 
     const updatedUsuario = await UsuarioModel.update(usuarioId, {
@@ -80,7 +91,7 @@ export const EmpresaService = {
     });
 
     if (!updatedUsuario) {
-      throw ApiError.badRequest('Não foi possível associar o usuário à empresa');
+      throw ApiError.badRequest('Nǜo foi poss��vel associar o usuǭrio �� empresa');
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { Senha, ...usuarioSemSenha } = updatedUsuario;

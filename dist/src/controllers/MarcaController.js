@@ -6,7 +6,8 @@ const sendSuccess = (res, status, message, data) => res.status(status).json({ me
 exports.MarcaController = {
     async create(req, res, next) {
         try {
-            const marca = await MarcaService_1.MarcaService.create(req.body);
+            const file = req.file;
+            const marca = await MarcaService_1.MarcaService.create(req.body, file);
             sendSuccess(res, 201, 'Marca criada com sucesso.', marca);
         }
         catch (error) {
@@ -35,8 +36,20 @@ exports.MarcaController = {
     async update(req, res, next) {
         try {
             const id = Number(req.params.id);
-            const marca = await MarcaService_1.MarcaService.update(id, req.body);
+            const file = req.file;
+            const marca = await MarcaService_1.MarcaService.update(id, req.body, file);
             sendSuccess(res, 200, 'Marca atualizada com sucesso.', marca);
+        }
+        catch (error) {
+            next(error);
+        }
+    },
+    async changeStatus(req, res, next) {
+        try {
+            const id = Number(req.params.id);
+            const { Ativo } = req.body;
+            const marca = await MarcaService_1.MarcaService.changeStatus(id, Ativo);
+            sendSuccess(res, 200, 'Status da marca atualizado com sucesso.', marca);
         }
         catch (error) {
             next(error);

@@ -1,9 +1,14 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.imagemRoutes = void 0;
 const express_1 = require("express");
+const multer_1 = __importDefault(require("multer"));
 const ImagemController_1 = require("../controllers/ImagemController");
 const router = (0, express_1.Router)();
+const upload = (0, multer_1.default)({ storage: multer_1.default.memoryStorage() });
 /**
  * @swagger
  * tags:
@@ -59,9 +64,21 @@ const router = (0, express_1.Router)();
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Imagem'
+ *             type: object
+ *             required:
+ *               - UrlImg
+ *               - IdProduto
+ *             properties:
+ *               UrlImg:
+ *                 type: string
+ *                 format: binary
+ *               Descricao:
+ *                 type: string
+ *                 nullable: true
+ *               IdProduto:
+ *                 type: integer
  *     responses:
  *       201:
  *         description: Imagem criada
@@ -70,7 +87,7 @@ const router = (0, express_1.Router)();
  *             schema:
  *               $ref: '#/components/schemas/ImagemResponse'
  */
-router.post('/', ImagemController_1.ImagemController.create);
+router.post('/', upload.single('UrlImg'), ImagemController_1.ImagemController.create);
 /**
  * @swagger
  * /api/imagens:

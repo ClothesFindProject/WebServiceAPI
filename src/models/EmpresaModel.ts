@@ -39,6 +39,7 @@ export interface Empresa {
   GeoX?: string | null;
   GeoY?: string | null;
   created_at?: Date | null;
+  ImagemLogo?: string | null;
 }
 
 export type EmpresaInsert = Omit<Empresa, 'Id'>;
@@ -83,6 +84,7 @@ const rowToEmpresa = (row: RowDataPacket): Empresa => {
     GeoX: row.GeoX,
     GeoY: row.GeoY,
     created_at: row.created_at ? new Date(row.created_at) : null,
+    ImagemLogo: row.ImagemLogo,
   };
   return empresa;
 };
@@ -116,17 +118,16 @@ const baseColumns = [
   'BancoPrincipal',
   'Agencia',
   'ContaBancaria',
-  'Ativo',
-  'DataCriacao',
   'DataAtualizacao',
   'CriadoPor',
   'AtualizadoPor',
   'GeoX',
   'GeoY',
   'created_at',
+  'ImagemLogo'
 ] as const;
 
-const dateColumns = new Set(['DataFundacao', 'DataCriacao', 'DataAtualizacao', 'created_at']);
+const dateColumns = new Set(['DataFundacao', 'DataAtualizacao', 'created_at']);
 
 const formatDateTime = (date: Date): string => {
   const pad = (n: number) => n.toString().padStart(2, '0');
@@ -141,6 +142,12 @@ const sanitizeValue = (column: string, value: unknown): unknown => {
     return value ? 1 : 0;
   }
 
+  if (typeof value === 'string') {
+    const lower = value.trim().toLowerCase();
+    if (lower === 'true') return 1;
+    if (lower === 'false') return 0;
+  }
+
   if (dateColumns.has(column)) {
     const dateValue = value instanceof Date ? value : new Date(String(value));
     if (Number.isNaN(dateValue.getTime())) {
@@ -153,13 +160,12 @@ const sanitizeValue = (column: string, value: unknown): unknown => {
 };
 
 const create = async (empresa: EmpresaInsert): Promise<Empresa> => {
-  const now = new Date();
+  const safeEmpresa = (empresa ?? {}) as EmpresaInsert;
   const payload: EmpresaInsert = {
-    ...empresa,
-    DataCriacao: empresa.DataCriacao ?? now,
-    DataAtualizacao: empresa.DataAtualizacao ?? now,
-    created_at: empresa.created_at ?? now,
-    Ativo: empresa.Ativo ?? true,
+    ...safeEmpresa,
+    DataAtualizacao: safeEmpresa.DataAtualizacao ?? null,
+    created_at: safeEmpresa.created_at ?? null,
+    Ativo: safeEmpresa.Ativo ?? true,
   };
 
   const placeholders = baseColumns.map(() => '?').join(', ');

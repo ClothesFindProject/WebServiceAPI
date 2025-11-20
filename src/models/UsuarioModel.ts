@@ -15,6 +15,7 @@ export interface Usuario {
   Rua?: string | null;
   Empresa?: string | null;
   Ativo: boolean;
+  UserImagem?: string | null;
   ProximaExpiracao?: Date | null;
   DataCriacao?: Date;
   DataInativacao?: Date | null;
@@ -48,6 +49,7 @@ const rowToUsuario = (row: RowDataPacket): Usuario => {
     Rua: row.Rua,
     Empresa: row.Empresa,
     Ativo: Boolean(row.Ativo),
+    UserImagem: row.UserImagem,
     ProximaExpiracao: row.ProximaExpiracao ? new Date(row.ProximaExpiracao) : null,
     DataInativacao: row.DataInativacao ? new Date(row.DataInativacao) : null,
     IdMenu: row.IdMenu,
@@ -79,6 +81,7 @@ const baseColumns = [
   'Bairro',
   'Rua',
   'Empresa',
+  'UserImagem',
   'Ativo',
   'ProximaExpiracao',
   'DataCriacao',
@@ -96,6 +99,11 @@ const sanitizeValue = (value: unknown): unknown => {
   }
   if (typeof value === 'boolean') {
     return value ? 1 : 0;
+  }
+  if (typeof value === 'string') {
+    const lower = value.trim().toLowerCase();
+    if (lower === 'true') return 1;
+    if (lower === 'false') return 0;
   }
   return value;
 };

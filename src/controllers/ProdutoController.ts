@@ -7,7 +7,38 @@ const sendSuccess = <T>(res: Response, status: number, message: string, data?: T
 export const ProdutoController = {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const produto = await ProdutoService.create(req.body);
+      const files = (req as any).files as Express.Multer.File[] | undefined;
+      const body = { ...(req.body as any) };
+
+      // normaliza campos do body (multipart vem como string)
+      if (typeof body.Tags === 'string') {
+        try {
+          body.Tags = JSON.parse(body.Tags);
+        } catch {
+          body.Tags = body.Tags.split(',').map((t: string) => t.trim()).filter(Boolean);
+        }
+      }
+      if (typeof body.IdEmpresa === 'string') body.IdEmpresa = Number(body.IdEmpresa);
+      if (typeof body.IdMarca === 'string' && body.IdMarca !== '') body.IdMarca = Number(body.IdMarca);
+
+      // metadados opcionais das imagens (descricao)
+      let imagensMeta: Array<{ Descricao?: string | null }> = [];
+      if (typeof body.ImagensMetadata === 'string') {
+        try {
+          const parsed = JSON.parse(body.ImagensMetadata);
+          if (Array.isArray(parsed)) {
+            imagensMeta = parsed.map((item) => ({
+              Descricao: item?.Descricao ?? null,
+            }));
+          }
+        } catch {
+          imagensMeta = [];
+        }
+      }
+      body.Imagens = imagensMeta;
+      delete body.ImagensMetadata;
+
+      const produto = await ProdutoService.create(body, files);
       sendSuccess(res, 201, 'Produto criado com sucesso.', produto);
     } catch (error) {
       next(error);

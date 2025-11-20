@@ -12,6 +12,7 @@ export interface Usuario {
     Rua?: string | null;
     Empresa?: string | null;
     Ativo: boolean;
+    UserImagem?: string | null;
     ProximaExpiracao?: Date | null;
     DataCriacao?: Date;
     DataInativacao?: Date | null;

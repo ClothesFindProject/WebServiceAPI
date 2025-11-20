@@ -17,6 +17,7 @@ const rowToUsuario = (row) => {
         Rua: row.Rua,
         Empresa: row.Empresa,
         Ativo: Boolean(row.Ativo),
+        UserImagem: row.UserImagem,
         ProximaExpiracao: row.ProximaExpiracao ? new Date(row.ProximaExpiracao) : null,
         DataInativacao: row.DataInativacao ? new Date(row.DataInativacao) : null,
         IdMenu: row.IdMenu,
@@ -44,6 +45,7 @@ const baseColumns = [
     'Bairro',
     'Rua',
     'Empresa',
+    'UserImagem',
     'Ativo',
     'ProximaExpiracao',
     'DataCriacao',
@@ -52,12 +54,20 @@ const baseColumns = [
     'EmpresaId',
     'created_at',
 ];
+const columnsIgnoreNull = new Set(['ProximaExpiracao', 'DataInativacao', 'EmpresaId']);
 const sanitizeValue = (value) => {
     if (value === undefined) {
         return null;
     }
     if (typeof value === 'boolean') {
         return value ? 1 : 0;
+    }
+    if (typeof value === 'string') {
+        const lower = value.trim().toLowerCase();
+        if (lower === 'true')
+            return 1;
+        if (lower === 'false')
+            return 0;
     }
     return value;
 };
@@ -68,9 +78,16 @@ const create = async (usuario) => {
         DataCriacao: usuario.DataCriacao ?? now,
         created_at: usuario.created_at ?? now,
     };
-    const placeholders = baseColumns.map(() => '?').join(', ');
-    const query = `INSERT INTO Usuarios (${baseColumns.join(', ')}) VALUES (${placeholders})`;
-    const values = baseColumns.map((column) => sanitizeValue(payload[column]));
+    const columns = baseColumns.filter((column) => {
+        if (!columnsIgnoreNull.has(column)) {
+            return true;
+        }
+        const value = payload[column];
+        return value !== null && value !== undefined;
+    });
+    const placeholders = columns.map(() => '?').join(', ');
+    const query = `INSERT INTO Usuarios (${columns.join(', ')}) VALUES (${placeholders})`;
+    const values = columns.map((column) => sanitizeValue(payload[column]));
     const [result] = await database_1.pool.execute(query, values);
     return {
         ...payload,
@@ -104,7 +121,15 @@ const findAll = async () => {
     return rows.map(rowToUsuario);
 };
 const update = async (id, data) => {
-    const entries = Object.entries(data).filter(([, value]) => value !== undefined);
+    const entries = Object.entries(data).filter(([key, value]) => {
+        if (value === undefined) {
+            return false;
+        }
+        if (value === null && columnsIgnoreNull.has(key)) {
+            return false;
+        }
+        return true;
+    });
     if (entries.length === 0) {
         return findById(id);
     }

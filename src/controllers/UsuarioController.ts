@@ -12,7 +12,8 @@ const sendSuccess = <T>(res: Response, status: number, message: string, data?: T
 export const UsuarioController = {
   async register(req: Request, res: Response, next: NextFunction) {
     try {
-      const usuario = await UsuarioService.register(req.body);
+      const file = (req as any).file;
+      const usuario = await UsuarioService.register(req.body, file);
       sendSuccess(res, 201, 'Usuário criado com sucesso.', usuario);
     } catch (error) {
       next(error);
@@ -50,7 +51,8 @@ export const UsuarioController = {
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);
-      const usuario = await UsuarioService.update(id, req.body);
+      const file = (req as any).file;
+      const usuario = await UsuarioService.update(id, req.body, file);
       sendSuccess(res, 200, 'Usuário atualizado com sucesso.', usuario);
     } catch (error) {
       next(error);
@@ -62,6 +64,17 @@ export const UsuarioController = {
       const id = Number(req.params.id);
       await UsuarioService.remove(id);
       sendSuccess(res, 200, 'Usuário removido com sucesso.');
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async changeStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = Number(req.params.id);
+      const { Ativo } = req.body as { Ativo: unknown };
+      const usuario = await UsuarioService.changeStatus(id, Ativo);
+      sendSuccess(res, 200, 'Status do usuário atualizado com sucesso.', usuario);
     } catch (error) {
       next(error);
     }

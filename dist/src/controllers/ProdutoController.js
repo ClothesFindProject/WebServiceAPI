@@ -6,7 +6,39 @@ const sendSuccess = (res, status, message, data) => res.status(status).json({ me
 exports.ProdutoController = {
     async create(req, res, next) {
         try {
-            const produto = await ProdutoService_1.ProdutoService.create(req.body);
+            const files = req.files;
+            const body = { ...req.body };
+            // normaliza campos do body (multipart vem como string)
+            if (typeof body.Tags === 'string') {
+                try {
+                    body.Tags = JSON.parse(body.Tags);
+                }
+                catch {
+                    body.Tags = body.Tags.split(',').map((t) => t.trim()).filter(Boolean);
+                }
+            }
+            if (typeof body.IdEmpresa === 'string')
+                body.IdEmpresa = Number(body.IdEmpresa);
+            if (typeof body.IdMarca === 'string' && body.IdMarca !== '')
+                body.IdMarca = Number(body.IdMarca);
+            // metadados opcionais das imagens (descricao)
+            let imagensMeta = [];
+            if (typeof body.ImagensMetadata === 'string') {
+                try {
+                    const parsed = JSON.parse(body.ImagensMetadata);
+                    if (Array.isArray(parsed)) {
+                        imagensMeta = parsed.map((item) => ({
+                            Descricao: item?.Descricao ?? null,
+                        }));
+                    }
+                }
+                catch {
+                    imagensMeta = [];
+                }
+            }
+            body.Imagens = imagensMeta;
+            delete body.ImagensMetadata;
+            const produto = await ProdutoService_1.ProdutoService.create(body, files);
             sendSuccess(res, 201, 'Produto criado com sucesso.', produto);
         }
         catch (error) {

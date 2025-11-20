@@ -6,7 +6,8 @@ const sendSuccess = (res, status, message, data) => res.status(status).json({ me
 exports.EmpresaController = {
     async create(req, res, next) {
         try {
-            const empresa = await EmpresaService_1.EmpresaService.create(req.body);
+            const file = req.file;
+            const empresa = await EmpresaService_1.EmpresaService.create(req.body, file);
             sendSuccess(res, 201, 'Empresa criada com sucesso.', empresa);
         }
         catch (error) {

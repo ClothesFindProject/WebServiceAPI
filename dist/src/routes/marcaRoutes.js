@@ -1,14 +1,19 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.marcaRoutes = void 0;
 const express_1 = require("express");
+const multer_1 = __importDefault(require("multer"));
 const MarcaController_1 = require("../controllers/MarcaController");
 const router = (0, express_1.Router)();
+const upload = (0, multer_1.default)({ storage: multer_1.default.memoryStorage() });
 /**
  * @swagger
  * tags:
  *   name: Marcas
- *   description: Gestão de marcas
+ *   description: Gestao de marcas
  *
  * components:
  *   schemas:
@@ -27,12 +32,11 @@ const router = (0, express_1.Router)();
  *         ImgMarca:
  *           type: string
  *           nullable: true
+ *           description: URL da imagem da marca
  *         created_at:
  *           type: string
  *           format: date-time
  *           nullable: true
- *           description: "Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
- *           example: '2025-11-14 13:15:48'
  *     MarcaResponse:
  *       allOf:
  *         - $ref: '#/components/schemas/MessageResponse'
@@ -57,9 +61,24 @@ const router = (0, express_1.Router)();
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Marca'
+ *             type: object
+ *             required:
+ *               - Nome
+ *             properties:
+ *               Nome:
+ *                 type: string
+ *               Site:
+ *                 type: string
+ *                 nullable: true
+ *               ImgMarca:
+ *                 type: string
+ *                 format: binary
+ *                 nullable: true
+ *               Ativo:
+ *                 type: boolean
+ *                 description: "Opcional. Default: true"
  *     responses:
  *       201:
  *         description: Marca criada
@@ -68,7 +87,7 @@ const router = (0, express_1.Router)();
  *             schema:
  *               $ref: '#/components/schemas/MarcaResponse'
  */
-router.post('/', MarcaController_1.MarcaController.create);
+router.post('/', upload.single('ImgMarca'), MarcaController_1.MarcaController.create);
 /**
  * @swagger
  * /api/marcas:
@@ -104,7 +123,7 @@ router.get('/', MarcaController_1.MarcaController.list);
  *             schema:
  *               $ref: '#/components/schemas/MarcaResponse'
  *       404:
- *         description: Marca não encontrada
+ *         description: Marca nao encontrada
  */
 router.get('/:id', MarcaController_1.MarcaController.findById);
 /**
@@ -122,9 +141,21 @@ router.get('/:id', MarcaController_1.MarcaController.findById);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Marca'
+ *             type: object
+ *             properties:
+ *               Nome:
+ *                 type: string
+ *               Site:
+ *                 type: string
+ *                 nullable: true
+ *               ImgMarca:
+ *                 type: string
+ *                 format: binary
+ *                 nullable: true
+ *               Ativo:
+ *                 type: boolean
  *     responses:
  *       200:
  *         description: Marca atualizada
@@ -133,7 +164,42 @@ router.get('/:id', MarcaController_1.MarcaController.findById);
  *             schema:
  *               $ref: '#/components/schemas/MarcaResponse'
  */
-router.put('/:id', MarcaController_1.MarcaController.update);
+router.put('/:id', upload.single('ImgMarca'), MarcaController_1.MarcaController.update);
+/**
+ * @swagger
+ * /api/marcas/{id}/status:
+ *   patch:
+ *     summary: Ativar ou inativar marca
+ *     tags: [Marcas]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - Ativo
+ *             properties:
+ *               Ativo:
+ *                 type: boolean
+ *                 description: true para ativar, false para inativar
+ *     responses:
+ *       200:
+ *         description: Status atualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/MarcaResponse'
+ *       404:
+ *         description: Marca nao encontrada
+ */
+router.patch('/:id/status', MarcaController_1.MarcaController.changeStatus);
 /**
  * @swagger
  * /api/marcas/{id}:
@@ -153,6 +219,8 @@ router.put('/:id', MarcaController_1.MarcaController.update);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/MessageResponse'
+ *       404:
+ *         description: Marca nao encontrada
  */
 router.delete('/:id', MarcaController_1.MarcaController.remove);
 exports.marcaRoutes = router;

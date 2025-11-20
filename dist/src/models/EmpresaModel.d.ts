@@ -36,6 +36,7 @@ export interface Empresa {
     GeoX?: string | null;
     GeoY?: string | null;
     created_at?: Date | null;
+    ImagemLogo?: string | null;
 }
 export type EmpresaInsert = Omit<Empresa, 'Id'>;
 export type EmpresaUpdate = Partial<Omit<Empresa, 'Id'>>;

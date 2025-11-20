@@ -4,7 +4,7 @@ export type EmpresaDetalhada = Empresa & {
     Produtos: ProdutoDetalhado[];
 };
 export declare const EmpresaService: {
-    create(data: EmpresaInsert): Promise<Empresa>;
+    create(data: EmpresaInsert, file?: any): Promise<Empresa>;
     list(): Promise<EmpresaDetalhada[]>;
     findById(id: number): Promise<EmpresaDetalhada>;
     update(id: number, data: EmpresaUpdate): Promise<Empresa>;
@@ -25,6 +25,7 @@ export declare const EmpresaService: {
             Rua?: string | null;
             Empresa?: string | null;
             Ativo: boolean;
+            UserImagem?: string | null;
             ProximaExpiracao?: Date | null;
             DataCriacao?: Date;
             DataInativacao?: Date | null;

@@ -1,7 +1,10 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { EmpresaController } from '../controllers/EmpresaController';
 
 const router = Router();
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 /**
  * @swagger
@@ -104,12 +107,6 @@ const router = Router();
  *           nullable: true
  *         Ativo:
  *           type: boolean
- *         DataCriacao:
- *           type: string
- *           format: date-time
- *           nullable: true
- *           description: "Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
- *           example: '2025-11-14 13:15:48'
  *         DataAtualizacao:
  *           type: string
  *           format: date-time
@@ -134,6 +131,132 @@ const router = Router();
  *           nullable: true
  *           description: "Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
  *           example: '2025-11-14 13:15:48'
+ *         ImagemLogo:
+ *           type: string
+ *           nullable: true
+ *           description: URL da logo armazenada
+ *     EmpresaCreatePayload:
+ *       type: object
+ *       required:
+ *         - RazaoSocial
+ *       properties:
+ *         RazaoSocial:
+ *           type: string
+ *         NomeFantasia:
+ *           type: string
+ *           nullable: true
+ *         InscricaoEstadual:
+ *           type: string
+ *           nullable: true
+ *         InscricaoMunicipal:
+ *           type: string
+ *           nullable: true
+ *         TipoEmpresa:
+ *           type: string
+ *           nullable: true
+ *         DataFundacao:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *           description: "Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
+ *           example: '2025-11-14 13:15:48'
+ *         CEP:
+ *           type: string
+ *           nullable: true
+ *         Logradouro:
+ *           type: string
+ *           nullable: true
+ *         Numero:
+ *           type: string
+ *           nullable: true
+ *         Complemento:
+ *           type: string
+ *           nullable: true
+ *         Bairro:
+ *           type: string
+ *           nullable: true
+ *         Cidade:
+ *           type: string
+ *           nullable: true
+ *         UF:
+ *           type: string
+ *           nullable: true
+ *         Pais:
+ *           type: string
+ *           nullable: true
+ *         TelefonePrincipal:
+ *           type: string
+ *           nullable: true
+ *         TelefoneSecundario:
+ *           type: string
+ *           nullable: true
+ *         Email:
+ *           type: string
+ *           nullable: true
+ *         Site:
+ *           type: string
+ *           nullable: true
+ *         LinkInstagram:
+ *           type: string
+ *           nullable: true
+ *         LinkWhatsapp:
+ *           type: string
+ *           nullable: true
+ *         LinkSite:
+ *           type: string
+ *           nullable: true
+ *         ResponsavelContato:
+ *           type: string
+ *           nullable: true
+ *         InscricaoSuframa:
+ *           type: string
+ *           nullable: true
+ *         RegimeTributario:
+ *           type: string
+ *           nullable: true
+ *         CodigoCNAE:
+ *           type: string
+ *           nullable: true
+ *         BancoPrincipal:
+ *           type: string
+ *           nullable: true
+ *         Agencia:
+ *           type: string
+ *           nullable: true
+ *         ContaBancaria:
+ *           type: string
+ *           nullable: true
+ *         Ativo:
+ *           type: boolean
+ *           description: "Se nao informado, o padrao e true"
+ *         DataAtualizacao:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *           description: "Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
+ *           example: '2025-11-14 13:15:48'
+ *         CriadoPor:
+ *           type: string
+ *           nullable: true
+ *         AtualizadoPor:
+ *           type: string
+ *           nullable: true
+ *         GeoX:
+ *           type: string
+ *           nullable: true
+ *         GeoY:
+ *           type: string
+ *           nullable: true
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *           description: "Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
+ *           example: '2025-11-14 13:15:48'
+ *         ImagemLogo:
+ *           type: string
+ *           format: binary
+ *           nullable: true
  *     AssociateUsuarioPayload:
  *       type: object
  *       required:
@@ -199,9 +322,9 @@ const router = Router();
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Empresa'
+ *             $ref: '#/components/schemas/EmpresaCreatePayload'
  *     responses:
  *       201:
  *         description: Empresa criada
@@ -210,7 +333,7 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/EmpresaResponse'
  */
-router.post('/', EmpresaController.create);
+router.post('/', upload.single('ImagemLogo'), EmpresaController.create);
 
 /**
  * @swagger

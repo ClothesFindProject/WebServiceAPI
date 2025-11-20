@@ -6,7 +6,8 @@ const sendSuccess = (res, status, message, data) => res.status(status).json({ me
 exports.UsuarioController = {
     async register(req, res, next) {
         try {
-            const usuario = await UsuarioService_1.UsuarioService.register(req.body);
+            const file = req.file;
+            const usuario = await UsuarioService_1.UsuarioService.register(req.body, file);
             sendSuccess(res, 201, 'Usuário criado com sucesso.', usuario);
         }
         catch (error) {
@@ -44,7 +45,8 @@ exports.UsuarioController = {
     async update(req, res, next) {
         try {
             const id = Number(req.params.id);
-            const usuario = await UsuarioService_1.UsuarioService.update(id, req.body);
+            const file = req.file;
+            const usuario = await UsuarioService_1.UsuarioService.update(id, req.body, file);
             sendSuccess(res, 200, 'Usuário atualizado com sucesso.', usuario);
         }
         catch (error) {
@@ -56,6 +58,17 @@ exports.UsuarioController = {
             const id = Number(req.params.id);
             await UsuarioService_1.UsuarioService.remove(id);
             sendSuccess(res, 200, 'Usuário removido com sucesso.');
+        }
+        catch (error) {
+            next(error);
+        }
+    },
+    async changeStatus(req, res, next) {
+        try {
+            const id = Number(req.params.id);
+            const { Ativo } = req.body;
+            const usuario = await UsuarioService_1.UsuarioService.changeStatus(id, Ativo);
+            sendSuccess(res, 200, 'Status do usuário atualizado com sucesso.', usuario);
         }
         catch (error) {
             next(error);

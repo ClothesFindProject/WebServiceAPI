@@ -7,7 +7,8 @@ const sendSuccess = <T>(res: Response, status: number, message: string, data?: T
 export const ImagemController = {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const imagem = await ImagemService.create(req.body);
+      const file = (req as any).file;
+      const imagem = await ImagemService.create(req.body, file);
       sendSuccess(res, 201, 'Imagem cadastrada com sucesso.', imagem);
     } catch (error) {
       next(error);

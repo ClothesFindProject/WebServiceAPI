@@ -1,7 +1,9 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { UsuarioController } from '../controllers/UsuarioController';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 /**
  * @swagger
@@ -46,26 +48,12 @@ const router = Router();
  *         Empresa:
  *           type: string
  *           nullable: true
+ *         UserImagem:
+ *           type: string
+ *           nullable: true
+ *           description: URL da imagem de perfil no R2
  *         Ativo:
  *           type: boolean
- *         ProximaExpiracao:
- *           type: string
- *           format: date-time
- *           nullable: true
- *           description: "Opcional no cadastro. Se enviado null será ignorado. Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
- *           example: '2025-11-14 13:15:48'
- *         DataCriacao:
- *           type: string
- *           format: date-time
- *           nullable: true
- *           description: "Opcional no cadastro. Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
- *           example: '2025-11-14 13:15:48'
- *         DataInativacao:
- *           type: string
- *           format: date-time
- *           nullable: true
- *           description: "Opcional no cadastro. Se enviado null será ignorado. Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
- *           example: '2025-11-14 13:15:48'
  *         IdMenu:
  *           type: integer
  *           nullable: true
@@ -73,12 +61,6 @@ const router = Router();
  *           type: integer
  *           nullable: true
  *           description: "Opcional no cadastro. Se enviado null será ignorado"
- *         created_at:
- *           type: string
- *           format: date-time
- *           nullable: true
- *           description: "Formato esperado: 'YYYY-MM-DD HH:mm:ss'"
- *           example: '2025-11-14 13:15:48'
  *     UsuarioRegister:
  *       type: object
  *       required:
@@ -120,6 +102,11 @@ const router = Router();
  *         Empresa:
  *           type: string
  *           nullable: true
+ *         UserImagem:
+ *           type: string
+ *           format: binary
+ *           nullable: true
+ *           description: Upload da imagem de perfil no R2 (opcional no cadastro)
  *         Ativo:
  *           type: boolean
  *           description: "Opcional no cadastro. Default: true"
@@ -130,6 +117,50 @@ const router = Router();
  *           type: integer
  *           nullable: true
  *           description: "Opcional no cadastro. Se enviado null será ignorado"
+ *     UsuarioUpdatePayload:
+ *       type: object
+ *       properties:
+ *         Nome:
+ *           type: string
+ *         SobreNome:
+ *           type: string
+ *         CpfCnpj:
+ *           type: string
+ *         Telefone:
+ *           type: string
+ *           nullable: true
+ *         Telefone2:
+ *           type: string
+ *           nullable: true
+ *         Pais:
+ *           type: string
+ *           nullable: true
+ *         UF:
+ *           type: string
+ *           nullable: true
+ *         Cidade:
+ *           type: string
+ *           nullable: true
+ *         Bairro:
+ *           type: string
+ *           nullable: true
+ *         Rua:
+ *           type: string
+ *           nullable: true
+ *         Empresa:
+ *           type: string
+ *           nullable: true
+ *         UserImagem:
+ *           type: string
+ *           format: binary
+ *           nullable: true
+ *         IdMenu:
+ *           type: integer
+ *           nullable: true
+ *         EmpresaId:
+ *           type: integer
+ *           nullable: true
+ *           description: "Opcional. Se enviado null será ignorado"
  *     UsuarioLogin:
  *       type: object
  *       required:
@@ -209,6 +240,9 @@ const router = Router();
  *         menu:
  *           $ref: '#/components/schemas/MenuTree'
  *           nullable: true
+ *         UserImagem:
+ *           type: string
+ *           nullable: true
  *     MessageResponse:
  *       type: object
  *       properties:
@@ -248,6 +282,9 @@ const router = Router();
  *             menu:
  *               $ref: '#/components/schemas/MenuTree'
  *               nullable: true
+ *             UserImagem:
+ *               type: string
+ *               nullable: true
  */
 
 /**
@@ -259,7 +296,7 @@ const router = Router();
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             $ref: '#/components/schemas/UsuarioRegister'
  *     responses:
@@ -272,7 +309,7 @@ const router = Router();
  *       400:
  *         description: Dados invalidos
  */
-router.post('/register', UsuarioController.register);
+router.post('/register', upload.single('UserImagem'), UsuarioController.register);
 
 /**
  * @swagger
@@ -342,7 +379,37 @@ router.get('/:id', UsuarioController.findById);
  * @swagger
  * /api/usuarios/{id}:
  *   put:
- *     summary: Atualizar usuario
+ *     summary: Atualizar usuario (inclui upload de imagem de perfil)
+ *     tags: [Usuarios]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/UsuarioUpdatePayload'
+ *     responses:
+ *       200:
+ *         description: Usuario atualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UsuarioWithMenuResponse'
+ *       404:
+ *         description: Usuario nao encontrado
+ */
+router.put('/:id', upload.single('UserImagem'), UsuarioController.update);
+
+/**
+ * @swagger
+ * /api/usuarios/{id}/status:
+ *   patch:
+ *     summary: Ativar ou inativar usuario
  *     tags: [Usuarios]
  *     parameters:
  *       - in: path
@@ -355,18 +422,24 @@ router.get('/:id', UsuarioController.findById);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Usuario'
+ *             type: object
+ *             required:
+ *               - Ativo
+ *             properties:
+ *               Ativo:
+ *                 type: boolean
+ *                 description: true para ativar, false para inativar
  *     responses:
  *       200:
- *         description: Usuario atualizado
+ *         description: Status atualizado
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/UsuarioWithMenuResponse'
+ *               $ref: '#/components/schemas/UsuarioResponse'
  *       404:
  *         description: Usuario nao encontrado
  */
-router.put('/:id', UsuarioController.update);
+router.patch('/:id/status', UsuarioController.changeStatus);
 
 /**
  * @swagger

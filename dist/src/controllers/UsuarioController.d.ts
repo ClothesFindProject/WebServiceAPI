@@ -6,5 +6,6 @@ export declare const UsuarioController: {
     findById(req: Request, res: Response, next: NextFunction): Promise<void>;
     update(req: Request, res: Response, next: NextFunction): Promise<void>;
     remove(req: Request, res: Response, next: NextFunction): Promise<void>;
+    changeStatus(req: Request, res: Response, next: NextFunction): Promise<void>;
 };
 //# sourceMappingURL=UsuarioController.d.ts.map

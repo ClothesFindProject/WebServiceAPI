@@ -1,7 +1,9 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { ImagemController } from '../controllers/ImagemController';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 /**
  * @swagger
@@ -59,9 +61,21 @@ const router = Router();
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Imagem'
+ *             type: object
+ *             required:
+ *               - UrlImg
+ *               - IdProduto
+ *             properties:
+ *               UrlImg:
+ *                 type: string
+ *                 format: binary
+ *               Descricao:
+ *                 type: string
+ *                 nullable: true
+ *               IdProduto:
+ *                 type: integer
  *     responses:
  *       201:
  *         description: Imagem criada
@@ -70,7 +84,7 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/ImagemResponse'
  */
-router.post('/', ImagemController.create);
+router.post('/', upload.single('UrlImg'), ImagemController.create);
 
 /**
  * @swagger
